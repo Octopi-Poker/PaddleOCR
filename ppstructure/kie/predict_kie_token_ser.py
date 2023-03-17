@@ -44,6 +44,7 @@ class SerPredictor(object):
             use_angle_cls=args.use_angle_cls,
             det_model_dir=args.det_model_dir,
             rec_model_dir=args.rec_model_dir,
+            rec_char_dict_path=args.rec_char_dict_path,
             show_log=False,
             use_gpu=args.use_gpu)
 
