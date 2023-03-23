@@ -77,6 +77,7 @@ class SerPredictor(object):
             show_log=False,
             rec_model_dir=global_config.get("kie_rec_model_dir", None),
             det_model_dir=global_config.get("kie_det_model_dir", None),
+            rec_char_dict_path=global_config.get("rec_char_dict_path", None),
             use_gpu=global_config['use_gpu'])
 
         # create data ops
