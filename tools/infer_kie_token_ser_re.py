@@ -61,7 +61,7 @@ class ReArgsParser(ArgsParser):
         return args
 
 
-def make_input(ser_inputs, ser_results):
+def make_input(ser_inputs, ser_results, ser_re_labels_map=None):
     entities_labels = {'HEADER': 0, 'QUESTION': 1, 'ANSWER': 2}
     batch_size, max_seq_len = ser_inputs[0].shape[:2]
     entities = ser_inputs[8][0]
@@ -76,10 +76,16 @@ def make_input(ser_inputs, ser_results):
     for i, (res, entity) in enumerate(zip(ser_results, entities)):
         if res['pred'] == 'O':
             continue
+        if ser_re_labels_map and res['pred'] not in ser_re_labels_map:
+            continue
         entity_idx_dict[len(start)] = i
         start.append(entity['start'])
         end.append(entity['end'])
-        label.append(entities_labels[res['pred']])
+        if ser_re_labels_map:
+            pred = ser_re_labels_map[res['pred']]
+        else:
+            pred = res['pred']
+        label.append(entities_labels[pred])
 
     entities = np.full([max_seq_len + 1, 3], fill_value=-1, dtype=np.int64)
     entities[0, 0] = len(start)
@@ -127,6 +133,7 @@ class SerRePredictor(object):
         if "infer_mode" in global_config:
             ser_config["Global"]["infer_mode"] = global_config["infer_mode"]
 
+        self.ser_re_labels_map = config["Global"].get("ser_re_labels_map", None)
         self.ser_engine = SerPredictor(ser_config)
 
         #  init re model 
@@ -145,7 +152,7 @@ class SerRePredictor(object):
 
     def __call__(self, data):
         ser_results, ser_inputs = self.ser_engine(data)
-        re_input, entity_idx_dict_batch = make_input(ser_inputs, ser_results)
+        re_input, entity_idx_dict_batch = make_input(ser_inputs, ser_results, self.ser_re_labels_map)
         if self.model.backbone.use_visual_backbone is False:
             re_input.pop(4)
         preds = self.model(re_input)
