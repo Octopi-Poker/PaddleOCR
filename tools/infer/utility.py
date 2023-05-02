@@ -31,6 +31,20 @@ def str2bool(v):
     return v.lower() in ("true", "t", "1")
 
 
+def kvlist(v):
+    res = {}
+    for kv in v.split(","):
+        if not kv:
+            continue
+        kvs = kv.split("=", 1)
+        if len(kvs) == 2:
+            k, v = kvs
+        else:
+            k, v = kvs[0], None
+        res[k] = v
+    return res
+
+
 def init_args():
     parser = argparse.ArgumentParser()
     # params for prediction engine
@@ -145,6 +159,10 @@ def init_args():
 
     parser.add_argument("--show_log", type=str2bool, default=True)
     parser.add_argument("--use_onnx", type=str2bool, default=False)
+
+    # debugging
+    parser.add_argument("--debug_args", type=kvlist, default="")
+
     return parser
 
 

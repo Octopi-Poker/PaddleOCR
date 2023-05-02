@@ -228,6 +228,16 @@ class TextDetector(object):
         img, shape_list = data
         if img is None:
             return None, 0
+
+        if "det_input" in self.args.debug_args:
+            def dump_det_input(img, filename):
+                # Convert from CHW to HWC
+                img = img.transpose((1, 2, 0))
+                # Partially denormalize
+                img *= 255
+                cv2.imwrite(filename, img)
+            dump_det_input(img, self.args.debug_args["det_input"])
+
         img = np.expand_dims(img, axis=0)
         shape_list = np.expand_dims(shape_list, axis=0)
         img = img.copy()
