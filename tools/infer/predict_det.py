@@ -229,14 +229,16 @@ class TextDetector(object):
         if img is None:
             return None, 0
 
-        if "det_input" in self.args.debug_args:
+        debug_det_prefix = self.args.debug_args.get("det_prefix")
+
+        if debug_det_prefix:
             def dump_det_input(img, filename):
                 # Convert from CHW to HWC
                 img = img.transpose((1, 2, 0))
                 # Partially denormalize
                 img *= 255
                 cv2.imwrite(filename, img)
-            dump_det_input(img, self.args.debug_args["det_input"])
+            dump_det_input(img, f"{debug_det_prefix}-input.png")
 
         img = np.expand_dims(img, axis=0)
         shape_list = np.expand_dims(shape_list, axis=0)
@@ -268,6 +270,15 @@ class TextDetector(object):
             preds['f_tco'] = outputs[2]
             preds['f_tvo'] = outputs[3]
         elif self.det_algorithm in ['DB', 'PSE', 'DB++']:
+            if debug_det_prefix:
+                def dump_det_output(img, filename):
+                    # Convert from CHW to HWC
+                    img = img.transpose((1, 2, 0))
+                    # Partially denormalize
+                    img *= 255
+                    cv2.imwrite(filename, img)
+                dump_det_output(outputs[0][0], f"{debug_det_prefix}-output-maps.png")
+
             preds['maps'] = outputs[0]
         elif self.det_algorithm == 'FCE':
             for i, output in enumerate(outputs):
