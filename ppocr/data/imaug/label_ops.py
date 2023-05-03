@@ -18,7 +18,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import copy
+import cv2
 import numpy as np
+from PIL import Image
 import string
 from shapely.geometry import LineString, Point, Polygon
 import json
@@ -27,6 +29,7 @@ from random import sample
 
 from ppocr.utils.logging import get_logger
 from ppocr.data.imaug.vqa.augment import order_by_tbyx
+from tools.infer.utility import draw_ocr_box_txt
 
 
 class ClsLabelEncode(object):
@@ -947,6 +950,7 @@ class VQATokenLabelEncode(object):
                  order_method=None,
                  infer_mode=False,
                  ocr_engine=None,
+                 debug_args=None,
                  **kwargs):
         super(VQATokenLabelEncode, self).__init__()
         from paddlenlp.transformers import LayoutXLMTokenizer, LayoutLMTokenizer, LayoutLMv2Tokenizer
@@ -975,6 +979,7 @@ class VQATokenLabelEncode(object):
         self.ocr_engine = ocr_engine
         self.use_textline_bbox_info = use_textline_bbox_info
         self.order_method = order_method
+        self.debug_args = debug_args
         assert self.order_method in [None, "tb-yx"]
 
     def split_bbox(self, bbox, text, tokenizer):
@@ -1019,6 +1024,16 @@ class VQATokenLabelEncode(object):
             if "bbox" not in ocr_info[idx]:
                 ocr_info[idx]["bbox"] = self.trans_poly_to_bbox(ocr_info[idx][
                     "points"])
+
+        debug_ser_prefix = isinstance(self.debug_args, dict) and self.debug_args.get("ser_prefix")
+        if debug_ser_prefix:
+            pil_img = Image.fromarray(cv2.cvtColor(data['image'], cv2.COLOR_BGR2RGB))
+            ocr_res = draw_ocr_box_txt(
+                pil_img,
+                [list(map(tuple, np.array(entity["points"]).astype(np.int32).tolist())) for entity in ocr_info],
+                [entity["transcription"] for entity in ocr_info],
+            )
+            cv2.imwrite(f"{debug_ser_prefix}-ocr-result.png", ocr_res)
 
         if self.order_method == "tb-yx":
             ocr_info = order_by_tbyx(ocr_info)

@@ -56,6 +56,7 @@ class SerPredictor(object):
                 'contains_re': False,
                 'ocr_engine': self.ocr_engine,
                 'order_method': args.ocr_order_method,
+                'debug_args': args.debug_args,
             }
         }, {
             'VQATokenPad': {
