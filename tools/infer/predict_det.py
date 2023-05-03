@@ -235,6 +235,7 @@ class TextDetector(object):
             return None, 0
 
         def dump_det_input(img, filename):
+            img = img.copy()
             # Convert from CHW to HWC
             img = img.transpose((1, 2, 0))
             # Denormalize colors
