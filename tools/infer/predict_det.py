@@ -216,7 +216,7 @@ class TextDetector(object):
         return dt_boxes
 
     def __call__(self, img):
-        debug_det_prefix = self.args.debug_args.get("det_prefix")
+        debug_det_prefix = isinstance(self.args.debug_args, dict) and self.args.debug_args.get("det_prefix")
 
         if debug_det_prefix:
             cv2.imwrite(f"{debug_det_prefix}-0-input.png", img)
