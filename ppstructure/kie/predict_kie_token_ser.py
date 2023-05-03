@@ -46,6 +46,7 @@ class SerPredictor(object):
             rec_model_dir=args.rec_model_dir,
             rec_char_dict_path=args.rec_char_dict_path,
             show_log=False,
+            debug_args=args.debug_args,
             use_gpu=args.use_gpu)
 
         pre_process_list = [{
