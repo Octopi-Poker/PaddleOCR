@@ -216,6 +216,11 @@ class TextDetector(object):
         return dt_boxes
 
     def __call__(self, img):
+        debug_det_prefix = self.args.debug_args.get("det_prefix")
+
+        if debug_det_prefix:
+            cv2.imwrite(f"{debug_det_prefix}-0-input.png", img)
+
         ori_im = img.copy()
         data = {'image': img}
 
@@ -229,16 +234,15 @@ class TextDetector(object):
         if img is None:
             return None, 0
 
-        debug_det_prefix = self.args.debug_args.get("det_prefix")
-
+        def dump_det_input(img, filename):
+            # Convert from CHW to HWC
+            img = img.transpose((1, 2, 0))
+            # Denormalize colors
+            img *= 255
+            cv2.imwrite(filename, img)
+        
         if debug_det_prefix:
-            def dump_det_input(img, filename):
-                # Convert from CHW to HWC
-                img = img.transpose((1, 2, 0))
-                # Partially denormalize
-                img *= 255
-                cv2.imwrite(filename, img)
-            dump_det_input(img, f"{debug_det_prefix}-input.png")
+            dump_det_input(img, f"{debug_det_prefix}-1-preprocessed.png")
 
         img = np.expand_dims(img, axis=0)
         shape_list = np.expand_dims(shape_list, axis=0)
@@ -272,12 +276,9 @@ class TextDetector(object):
         elif self.det_algorithm in ['DB', 'PSE', 'DB++']:
             if debug_det_prefix:
                 def dump_det_output(img, filename):
-                    # Convert from CHW to HWC
-                    img = img.transpose((1, 2, 0))
-                    # Partially denormalize
-                    img *= 255
-                    cv2.imwrite(filename, img)
-                dump_det_output(outputs[0][0], f"{debug_det_prefix}-output-maps.png")
+                    # Same processing as for input
+                    dump_det_input(img, filename)
+                dump_det_output(outputs[0][0], f"{debug_det_prefix}-2-output-maps.png")
 
             preds['maps'] = outputs[0]
         elif self.det_algorithm == 'FCE':
@@ -296,6 +297,10 @@ class TextDetector(object):
             dt_boxes = self.filter_tag_det_res_only_clip(dt_boxes, ori_im.shape)
         else:
             dt_boxes = self.filter_tag_det_res(dt_boxes, ori_im.shape)
+
+        if debug_det_prefix:
+            annotated_img = utility.draw_text_det_res(dt_boxes, ori_im)
+            cv2.imwrite(f"{debug_det_prefix}-3-output-postprocessed.png", annotated_img)
 
         if self.args.benchmark:
             self.autolog.times.end(stamp=True)
