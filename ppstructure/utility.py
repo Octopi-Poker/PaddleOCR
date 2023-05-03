@@ -15,7 +15,7 @@ import random
 import ast
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-from tools.infer.utility import draw_ocr_box_txt, str2bool, init_args as infer_args
+from tools.infer.utility import draw_ocr_box_txt, kvlist, str2bool, init_args as infer_args
 
 
 def init_args():
@@ -52,6 +52,7 @@ def init_args():
     # params for kie
     parser.add_argument("--kie_algorithm", type=str, default='LayoutXLM')
     parser.add_argument("--ser_model_dir", type=str)
+    parser.add_argument("--ser_re_labels_map", type=kvlist)
     parser.add_argument("--re_model_dir", type=str)
     parser.add_argument("--use_visual_backbone", type=str2bool, default=True)
     parser.add_argument(

@@ -48,6 +48,7 @@ class SerRePredictor(object):
                 utility.create_predictor(args, 're', logger)
         else:
             self.predictor = None
+        self.ser_re_labels_map = args.ser_re_labels_map
 
     def __call__(self, img):
         starttime = time.time()
@@ -55,7 +56,7 @@ class SerRePredictor(object):
         if self.predictor is None:
             return ser_results, ser_elapse
 
-        re_input, entity_idx_dict_batch = make_input(ser_inputs, ser_results)
+        re_input, entity_idx_dict_batch = make_input(ser_inputs, ser_results, self.ser_re_labels_map)
         if self.use_visual_backbone == False:
             re_input.pop(4)
         for idx in range(len(self.input_tensor)):
