@@ -60,6 +60,8 @@ class SerPredictor(object):
         global_config = config['Global']
         self.algorithm = config['Architecture']["algorithm"]
 
+        self.debug_args = config['Global'].get('debug_args')
+
         # build post process
         self.post_process_class = build_post_process(config['PostProcess'],
                                                      global_config)
@@ -78,7 +80,8 @@ class SerPredictor(object):
             rec_model_dir=global_config.get("kie_rec_model_dir", None),
             det_model_dir=global_config.get("kie_det_model_dir", None),
             rec_char_dict_path=global_config.get("rec_char_dict_path", None),
-            use_gpu=global_config['use_gpu'])
+            use_gpu=global_config['use_gpu'],
+            debug_args=self.debug_args)
 
         # create data ops
         transforms = []
