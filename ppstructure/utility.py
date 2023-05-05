@@ -16,6 +16,7 @@ import ast
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 from tools.infer.utility import draw_ocr_box_txt, kvlist, str2bool, init_args as infer_args
+from tools.infer.trace import PipelineTrace
 
 
 def init_args():
@@ -105,7 +106,12 @@ def init_args():
 
 def parse_args():
     parser = init_args()
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if args.trace:
+        PipelineTrace.enable()
+
+    return args
 
 
 def draw_structure_result(image, result, font_path):

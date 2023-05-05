@@ -26,6 +26,7 @@ import numpy as np
 import time
 
 import tools.infer.utility as utility
+from tools.infer.trace import PipelineTrace
 from ppocr.data import create_operators, transform
 from ppocr.postprocess import build_post_process
 from ppocr.utils.logging import get_logger
@@ -116,6 +117,15 @@ class SerPredictor(object):
         for idx in range(len(self.input_tensor)):
             self.input_tensor[idx].copy_from_cpu(data[idx])
 
+        if PipelineTrace.instance:
+            fname = PipelineTrace.instance.new_step_path("ser-model-inputs", ".json")
+            with open(fname, "w") as f:
+                json.dump(data, f, default=lambda v: repr(v))
+
+            fname = PipelineTrace.instance.new_step_path("input-transformed", ".png")
+            tmp = data[4][0].copy().transpose((1,2,0)) * 60 + 128
+            cv2.imwrite(fname, tmp)
+
         self.predictor.run()
 
         outputs = []
@@ -123,6 +133,12 @@ class SerPredictor(object):
             output = output_tensor.copy_to_cpu()
             outputs.append(output)
         preds = outputs[0]
+
+        if PipelineTrace.instance:
+            fname = PipelineTrace.instance.new_step_path("ser-model-output", ".json")
+            tmppreds = [v[0] for v in preds]
+            with open(fname, "w") as f:
+                json.dump(tmppreds, f, default=lambda v: repr(v))
 
         post_result = self.postprocess_op(
             preds, segment_offset_ids=data[6], ocr_infos=data[7])
@@ -148,6 +164,10 @@ def main(args):
             if img is None:
                 logger.info("error in loading image:{}".format(image_file))
                 continue
+
+            if PipelineTrace.enabled:
+                PipelineTrace.start(args.output, image_file)
+
             ser_res, _, elapse = ser_predictor(img)
             ser_res = ser_res[0]
 
