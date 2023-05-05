@@ -36,6 +36,7 @@ from ppocr.postprocess import build_post_process
 from ppocr.utils.save_load import load_model
 from ppocr.utils.visual import draw_ser_results
 from ppocr.utils.utility import get_image_file_list, load_vqa_bio_label_maps
+from tools.infer.trace import PipelineTrace
 import tools.program as program
 
 
@@ -60,8 +61,6 @@ class SerPredictor(object):
         global_config = config['Global']
         self.algorithm = config['Architecture']["algorithm"]
 
-        self.debug_args = config['Global'].get('debug_args')
-
         # build post process
         self.post_process_class = build_post_process(config['PostProcess'],
                                                      global_config)
@@ -80,8 +79,7 @@ class SerPredictor(object):
             rec_model_dir=global_config.get("kie_rec_model_dir", None),
             det_model_dir=global_config.get("kie_det_model_dir", None),
             rec_char_dict_path=global_config.get("rec_char_dict_path", None),
-            use_gpu=global_config['use_gpu'],
-            debug_args=self.debug_args)
+            use_gpu=global_config['use_gpu'])
 
         # create data ops
         transforms = []
@@ -147,6 +145,9 @@ if __name__ == '__main__':
             save_img_path = os.path.join(
                 config['Global']['save_res_path'],
                 os.path.splitext(os.path.basename(img_path))[0] + "_ser.jpg")
+
+            if PipelineTrace.enabled:
+                PipelineTrace.start(config['Global']['save_res_path'], img_path)
 
             result, _ = ser_engine(data)
             result = result[0]

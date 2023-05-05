@@ -30,6 +30,7 @@ from ppocr.utils.logging import get_logger
 from ppocr.utils.utility import get_image_file_list, check_and_read
 from ppocr.data import create_operators, transform
 from ppocr.postprocess import build_post_process
+from tools.infer.trace import PipelineTrace
 import json
 logger = get_logger()
 
@@ -216,10 +217,9 @@ class TextDetector(object):
         return dt_boxes
 
     def __call__(self, img):
-        debug_det_prefix = isinstance(self.args.debug_args, dict) and self.args.debug_args.get("det_prefix")
-
-        if debug_det_prefix:
-            cv2.imwrite(f"{debug_det_prefix}-0-input.png", img)
+        if PipelineTrace.instance:
+            fname = PipelineTrace.instance.new_step_path("det-input", "png")
+            cv2.imwrite(fname, img)
 
         ori_im = img.copy()
         data = {'image': img}
@@ -241,9 +241,10 @@ class TextDetector(object):
             # Denormalize colors
             img *= 255
             cv2.imwrite(filename, img)
-        
-        if debug_det_prefix:
-            dump_det_input(img, f"{debug_det_prefix}-1-preprocessed.png")
+
+        if PipelineTrace.instance:
+            fname = PipelineTrace.instance.new_step_path("det-preprocessed", "png")
+            dump_det_input(img, fname)
 
         img = np.expand_dims(img, axis=0)
         shape_list = np.expand_dims(shape_list, axis=0)
@@ -275,11 +276,12 @@ class TextDetector(object):
             preds['f_tco'] = outputs[2]
             preds['f_tvo'] = outputs[3]
         elif self.det_algorithm in ['DB', 'PSE', 'DB++']:
-            if debug_det_prefix:
+            if PipelineTrace.instance:
                 def dump_det_output(img, filename):
                     # Same processing as for input
                     dump_det_input(img, filename)
-                dump_det_output(outputs[0][0], f"{debug_det_prefix}-2-output-maps.png")
+                fname = PipelineTrace.instance.new_step_path("det-output-maps", "png")
+                dump_det_output(outputs[0][0], fname)
 
             preds['maps'] = outputs[0]
         elif self.det_algorithm == 'FCE':
@@ -299,9 +301,10 @@ class TextDetector(object):
         else:
             dt_boxes = self.filter_tag_det_res(dt_boxes, ori_im.shape)
 
-        if debug_det_prefix:
+        if PipelineTrace.instance:
             annotated_img = utility.draw_text_det_res(dt_boxes, ori_im)
-            cv2.imwrite(f"{debug_det_prefix}-3-output-postprocessed.png", annotated_img)
+            fname = PipelineTrace.instance.new_step_path("det-output-postprocessed", "png")
+            cv2.imwrite(fname, annotated_img)
 
         if self.args.benchmark:
             self.autolog.times.end(stamp=True)
@@ -339,6 +342,10 @@ if __name__ == "__main__":
             imgs = img[:page_num]
         for index, img in enumerate(imgs):
             st = time.time()
+
+            if PipelineTrace.enabled:
+                PipelineTrace.start(draw_img_save_dir, image_file)
+
             dt_boxes, _ = text_detector(img)
             elapse = time.time() - st
             total_time += elapse

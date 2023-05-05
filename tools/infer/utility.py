@@ -25,6 +25,7 @@ from paddle import inference
 import time
 import random
 from ppocr.utils.logging import get_logger
+from tools.infer.trace import PipelineTrace
 
 
 def str2bool(v):
@@ -161,14 +162,19 @@ def init_args():
     parser.add_argument("--use_onnx", type=str2bool, default=False)
 
     # debugging
-    parser.add_argument("--debug_args", type=kvlist, default="")
+    parser.add_argument("--trace", action="store_true")
 
     return parser
 
 
 def parse_args():
     parser = init_args()
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if args.trace:
+        PipelineTrace.enable()
+
+    return args
 
 
 def create_predictor(args, mode, logger):

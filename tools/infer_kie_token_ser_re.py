@@ -39,6 +39,7 @@ from ppocr.utils.visual import draw_re_results
 from ppocr.utils.logging import get_logger
 from ppocr.utils.utility import get_image_file_list, load_vqa_bio_label_maps, print_dict
 from tools.program import ArgsParser, load_config, merge_config
+from tools.infer.trace import PipelineTrace
 from tools.infer_kie_token_ser import SerPredictor
 
 
@@ -220,6 +221,9 @@ if __name__ == '__main__':
             save_img_path = os.path.join(
                 config['Global']['save_res_path'],
                 os.path.splitext(os.path.basename(img_path))[0] + "_ser_re.jpg")
+
+            if PipelineTrace.enabled:
+                PipelineTrace.start(config['Global']['save_res_path'], img_path)
 
             result = ser_re_engine(data)
             result = result[0]

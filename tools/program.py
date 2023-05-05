@@ -36,6 +36,7 @@ from ppocr.utils.logging import get_logger
 from ppocr.utils.loggers import VDLLogger, WandbLogger, Loggers
 from ppocr.utils import profiler
 from ppocr.data import build_dataloader
+from tools.infer.trace import PipelineTrace
 
 
 class ArgsParser(ArgumentParser):
@@ -53,12 +54,17 @@ class ArgsParser(ArgumentParser):
             help='The option of profiler, which should be in format ' \
                  '\"key1=value1;key2=value2;key3=value3\".'
         )
+        self.add_argument("--trace", action="store_true")
 
     def parse_args(self, argv=None):
         args = super(ArgsParser, self).parse_args(argv)
         assert args.config is not None, \
             "Please specify --config=configure_file_path."
         args.opt = self._parse_opt(args.opt)
+
+        if args.trace:
+            PipelineTrace.enable()
+
         return args
 
     def _parse_opt(self, opts):

@@ -46,7 +46,6 @@ class SerPredictor(object):
             rec_model_dir=args.rec_model_dir,
             rec_char_dict_path=args.rec_char_dict_path,
             show_log=False,
-            debug_args=args.debug_args,
             use_gpu=args.use_gpu)
 
         pre_process_list = [{
@@ -56,7 +55,6 @@ class SerPredictor(object):
                 'contains_re': False,
                 'ocr_engine': self.ocr_engine,
                 'order_method': args.ocr_order_method,
-                'debug_args': args.debug_args,
             }
         }, {
             'VQATokenPad': {
