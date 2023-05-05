@@ -1024,8 +1024,8 @@ class VQATokenLabelEncode(object):
                 ocr_info[idx]["bbox"] = self.trans_poly_to_bbox(ocr_info[idx][
                     "points"])
 
-        if PipelineTrace.enabled:
-            fname = PipelineTrace.get().new_step_path("ser-ocr-result", "png")
+        if PipelineTrace.instance:
+            fname = PipelineTrace.instance.new_step_path("ser-ocr-result", "png")
 
             pil_img = Image.fromarray(cv2.cvtColor(data['image'], cv2.COLOR_BGR2RGB))
             ocr_res = draw_ocr_box_txt(
