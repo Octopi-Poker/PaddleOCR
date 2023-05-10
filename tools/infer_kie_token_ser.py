@@ -108,11 +108,11 @@ class SerPredictor(object):
         batch = transform(data, self.ops)
 
         if PipelineTrace.instance:
-            fname = PipelineTrace.instance.new_step_path("ser-model-inputs", ".json")
+            fname = PipelineTrace.instance.new_step_path("ser-model-inputs", "json")
             with open(fname, "w") as f:
                 json.dump(batch, f, default=lambda v: repr(v))
 
-            fname = PipelineTrace.instance.new_step_path("input-transformed", ".png")
+            fname = PipelineTrace.instance.new_step_path("input-transformed", "png")
             tmp = batch[4].copy().transpose((1, 2, 0)) * 60 + 128
             cv2.imwrite(fname, tmp)
 
@@ -120,7 +120,7 @@ class SerPredictor(object):
         preds = self.model(batch)
 
         if PipelineTrace.instance:
-            fname = PipelineTrace.instance.new_step_path("ser-model-output", ".json")
+            fname = PipelineTrace.instance.new_step_path("ser-model-output", "json")
             with open(fname, "w") as f:
                 json.dump(preds, f, default=lambda v: repr(v))
 
