@@ -118,13 +118,10 @@ class SerPredictor(object):
             self.input_tensor[idx].copy_from_cpu(data[idx])
 
         if PipelineTrace.instance:
-            fname = PipelineTrace.instance.new_step_path("ser-model-inputs", "json")
-            with open(fname, "w") as f:
-                json.dump(data, f, default=lambda v: repr(v))
+            PipelineTrace.instance.trace_data("ser-model-inputs", data)
 
-            fname = PipelineTrace.instance.new_step_path("input-transformed", "png")
             tmp = data[4][0].copy().transpose((1,2,0)) * 60 + 128
-            cv2.imwrite(fname, tmp)
+            PipelineTrace.instance.trace_image("input-transformed", tmp)
 
         self.predictor.run()
 
@@ -133,12 +130,6 @@ class SerPredictor(object):
             output = output_tensor.copy_to_cpu()
             outputs.append(output)
         preds = outputs[0]
-
-        if PipelineTrace.instance:
-            fname = PipelineTrace.instance.new_step_path("ser-model-output", "json")
-            tmppreds = [v[0] for v in preds]
-            with open(fname, "w") as f:
-                json.dump(tmppreds, f, default=lambda v: repr(v))
 
         post_result = self.postprocess_op(
             preds, segment_offset_ids=data[6], ocr_infos=data[7])

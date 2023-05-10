@@ -1,5 +1,8 @@
+import json
 from pathlib import Path
 from typing import Optional
+
+import cv2
 
 
 class PipelineTrace:
@@ -35,3 +38,12 @@ class PipelineTrace:
         )
         self.index += 1
         return str(path)
+
+    def trace_image(self, description: str, img):
+        fname = PipelineTrace.instance.new_step_path(description, "png")
+        cv2.imwrite(fname, img)
+
+    def trace_data(self, description: str, data):
+        fname = PipelineTrace.instance.new_step_path(description, "json")
+        with open(fname, "w") as f:
+            json.dump(data, f, default=lambda v: repr(v), indent=2)

@@ -1025,15 +1025,13 @@ class VQATokenLabelEncode(object):
                     "points"])
 
         if PipelineTrace.instance:
-            fname = PipelineTrace.instance.new_step_path("ser-ocr-result", "png")
-
             pil_img = Image.fromarray(cv2.cvtColor(data['image'], cv2.COLOR_BGR2RGB))
             ocr_res = draw_ocr_box_txt(
                 pil_img,
                 [list(map(tuple, np.array(entity["points"]).astype(np.int32).tolist())) for entity in ocr_info],
                 [entity["transcription"] for entity in ocr_info],
             )
-            cv2.imwrite(fname, ocr_res)
+            PipelineTrace.instance.trace_image("ser-ocr-result", ocr_res)
 
         if self.order_method == "tb-yx":
             ocr_info = order_by_tbyx(ocr_info)

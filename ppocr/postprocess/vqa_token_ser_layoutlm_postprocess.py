@@ -14,6 +14,7 @@
 import numpy as np
 import paddle
 from ppocr.utils.utility import load_vqa_bio_label_maps
+from tools.infer.trace import PipelineTrace
 
 
 class VQASerTokenLayoutLMPostProcess(object):
@@ -45,6 +46,9 @@ class VQASerTokenLayoutLMPostProcess(object):
             preds = preds[0]
         if isinstance(preds, paddle.Tensor):
             preds = preds.numpy()
+
+        if PipelineTrace.instance:
+            PipelineTrace.instance.trace_data("ser-model-output", preds)
 
         if batch is not None:
             return self._metric(preds, batch[5])

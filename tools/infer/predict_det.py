@@ -218,8 +218,7 @@ class TextDetector(object):
 
     def __call__(self, img):
         if PipelineTrace.instance:
-            fname = PipelineTrace.instance.new_step_path("det-input", "png")
-            cv2.imwrite(fname, img)
+            PipelineTrace.instance.trace_image("det-input", img)
 
         ori_im = img.copy()
         data = {'image': img}
@@ -234,17 +233,16 @@ class TextDetector(object):
         if img is None:
             return None, 0
 
-        def dump_det_input(img, filename):
+        def dump_det_model_input(img):
             img = img.copy()
             # Convert from CHW to HWC
             img = img.transpose((1, 2, 0))
             # Denormalize colors
             img *= 255
-            cv2.imwrite(filename, img)
+            return img
 
         if PipelineTrace.instance:
-            fname = PipelineTrace.instance.new_step_path("det-preprocessed", "png")
-            dump_det_input(img, fname)
+            PipelineTrace.instance.trace_image("det-preprocessed", dump_det_model_input(img))
 
         img = np.expand_dims(img, axis=0)
         shape_list = np.expand_dims(shape_list, axis=0)
@@ -277,11 +275,10 @@ class TextDetector(object):
             preds['f_tvo'] = outputs[3]
         elif self.det_algorithm in ['DB', 'PSE', 'DB++']:
             if PipelineTrace.instance:
-                def dump_det_output(img, filename):
+                def dump_det_model_output(img):
                     # Same processing as for input
-                    dump_det_input(img, filename)
-                fname = PipelineTrace.instance.new_step_path("det-output-maps", "png")
-                dump_det_output(outputs[0][0], fname)
+                    return dump_det_model_input(img)
+                PipelineTrace.instance.trace_image("det-output-maps", dump_det_model_output(outputs[0][0]))
 
             preds['maps'] = outputs[0]
         elif self.det_algorithm == 'FCE':
@@ -303,8 +300,7 @@ class TextDetector(object):
 
         if PipelineTrace.instance:
             annotated_img = utility.draw_text_det_res(dt_boxes, ori_im)
-            fname = PipelineTrace.instance.new_step_path("det-output-postprocessed", "png")
-            cv2.imwrite(fname, annotated_img)
+            PipelineTrace.instance.trace_image("det-output-postprocessed", annotated_img)
 
         if self.args.benchmark:
             self.autolog.times.end(stamp=True)
