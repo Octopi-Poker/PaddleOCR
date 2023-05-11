@@ -69,7 +69,8 @@ class MainWindow(QMainWindow):
                  kie_mode=False,
                  default_filename=None,
                  default_predefined_class_file=None,
-                 default_save_dir=None):
+                 default_save_dir=None,
+                 ppocr_args={}):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__appname__)
         self.setWindowState(Qt.WindowMaximized)  # set window max
@@ -100,12 +101,14 @@ class MainWindow(QMainWindow):
                              cls=True,
                              use_gpu=gpu,
                              lang=lang,
-                             show_log=False)
+                             show_log=False,
+                             **ppocr_args)
         self.table_ocr = PPStructure(use_pdserving=False,
                                      use_gpu=gpu,
                                      lang=lang,
                                      layout=False,
-                                     show_log=False)
+                                     show_log=False,
+                                     **ppocr_args)
 
         if os.path.exists('./data/paddle.png'):
             result = self.ocr.ocr('./data/paddle.png', cls=True, det=True)
@@ -2813,12 +2816,24 @@ def get_main_app(argv=[]):
     arg_parser.add_argument("--predefined_classes_file",
                             default=os.path.join(os.path.dirname(__file__), "data", "predefined_classes.txt"),
                             nargs="?")
+    arg_parser.add_argument("--det_model_dir", type=str)
+    arg_parser.add_argument("--rec_model_dir", type=str)
+    arg_parser.add_argument("--rec_char_dict_path", type=str)
     args = arg_parser.parse_args(argv[1:])
+
+    ppocr_args = {}
+    if args.det_model_dir:
+        ppocr_args["det_model_dir"] = args.det_model_dir
+    if args.rec_model_dir:
+        ppocr_args["rec_model_dir"] = args.rec_model_dir
+    if args.rec_char_dict_path:
+        ppocr_args["rec_char_dict_path"] = args.rec_char_dict_path
 
     win = MainWindow(lang=args.lang,
                      gpu=args.gpu,
                      kie_mode=args.kie,
-                     default_predefined_class_file=args.predefined_classes_file)
+                     default_predefined_class_file=args.predefined_classes_file,
+                     ppocr_args=ppocr_args)
     win.show()
     return app, win
 
