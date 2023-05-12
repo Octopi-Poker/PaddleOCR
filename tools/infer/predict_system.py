@@ -34,6 +34,7 @@ import tools.infer.predict_det as predict_det
 import tools.infer.predict_cls as predict_cls
 from ppocr.utils.utility import get_image_file_list, check_and_read
 from ppocr.utils.logging import get_logger
+from tools.infer.trace import PipelineTrace
 from tools.infer.utility import draw_ocr_box_txt, get_rotate_crop_image, get_minarea_rect_crop
 logger = get_logger()
 
@@ -161,6 +162,9 @@ def main(args):
     _st = time.time()
     count = 0
     for idx, image_file in enumerate(image_file_list):
+
+        if PipelineTrace.enabled:
+            PipelineTrace.start(draw_img_save_dir, image_file)
 
         img, flag_gif, flag_pdf = check_and_read(image_file)
         if not flag_gif and not flag_pdf:
