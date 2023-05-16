@@ -504,6 +504,9 @@ class MainWindow(QMainWindow):
         singleRere = action(getStr('singleRe'), self.singleRerecognition,
                             'Ctrl+R', 'reRec', getStr('singleRe'), enabled=False)
 
+        convertPolyToBox = action(getStr('convertPolyToBox'), self.convertPolyToBox,
+                                  'Ctrl+B', 'new', getStr('convertPolyToBox'), enabled=False)
+
         createpoly = action(getStr('creatPolygon'), self.createPolygon,
                             'q', 'new', getStr('creatPolygon'), enabled=False)
         
@@ -595,6 +598,7 @@ class MainWindow(QMainWindow):
         self.actions = struct(save=save, resetAll=resetAll, deleteImg=deleteImg,
                               lineColor=color1, create=create, createpoly=createpoly, tableRec=tableRec, delete=delete, edit=edit, copy=copy,
                               saveRec=saveRec, singleRere=singleRere, AutoRec=AutoRec, reRec=reRec, cellreRec=cellreRec,
+                              convertPolyToBox=convertPolyToBox,
                               createMode=createMode, editMode=editMode,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
@@ -604,7 +608,7 @@ class MainWindow(QMainWindow):
                               rotateLeft=rotateLeft, rotateRight=rotateRight, lock=lock, exportJSON=exportJSON,
                               fileMenuActions=(opendir, open_dataset_dir, saveLabel, exportJSON, resetAll, quit),
                               beginner=(), advanced=(),
-                              editMenu=(createpoly, edit, copy, delete, singleRere, cellreRec, None, undo, undoLastPoint,
+                              editMenu=(createpoly, edit, copy, delete, singleRere, convertPolyToBox, cellreRec, None, undo, undoLastPoint,
                                         None, rotateLeft, rotateRight, None, color1, self.drawSquaresOption, lock,
                                         None, change_cls),
                               beginnerContext=(
@@ -1090,6 +1094,7 @@ class MainWindow(QMainWindow):
         self._noSelectionSlot = False
         n_selected = len(selected_shapes)
         self.actions.singleRere.setEnabled(n_selected)
+        self.actions.convertPolyToBox.setEnabled(n_selected)
         self.actions.cellreRec.setEnabled(n_selected)
         self.actions.delete.setEnabled(n_selected)
         self.actions.copy.setEnabled(n_selected)
@@ -2284,6 +2289,19 @@ class MainWindow(QMainWindow):
                     shape.label = self.noLabelText
             self.singleLabel(shape)
             self.setDirty()
+
+    def convertPolyToBox(self):
+        for shape in self.canvas.selectedShapes:
+            x = list(map(lambda p: p.x(), shape.points))
+            y = list(map(lambda p: p.y(), shape.points))
+            min_x = min(x)
+            max_x = max(x)
+            min_y = min(y)
+            max_y = max(y)
+            shape.points = [QPointF(min_x, min_y), QPointF(max_x, min_y), QPointF(max_x, max_y), QPointF(min_x, max_y)]
+
+            self.setDirty()
+            self.updateComboBox()
 
     def TableRecognition(self):
         '''
