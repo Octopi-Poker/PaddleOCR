@@ -111,7 +111,7 @@ class SerPredictor(object):
             PipelineTrace.instance.trace_data("ser-model-inputs", batch)
 
             tmp = batch[4].copy().transpose((1, 2, 0)) * 60 + 128
-            PipelineTrace.instance.trace_image("input-transformed", tmp)
+            PipelineTrace.instance.trace_image("ser-input-transformed", tmp)
 
         batch = to_tensor(batch)
         preds = self.model(batch)
