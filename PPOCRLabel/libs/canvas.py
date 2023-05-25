@@ -159,7 +159,8 @@ class Canvas(QWidget):
                     self.overrideCursor(CURSOR_POINT)
                     self.current.highlightVertex(0, Shape.NEAR_VERTEX)
 
-                if self.drawSquare:
+                if self.drawSquare and False:
+                # if self.drawSquare:
                     self.line.points = [self.current[0], pos]
                     self.line.close()
 
