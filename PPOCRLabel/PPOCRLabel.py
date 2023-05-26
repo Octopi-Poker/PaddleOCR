@@ -96,7 +96,6 @@ class MainWindow(QMainWindow):
 
         self.defaultSaveDir = default_save_dir
         self.ocr = PaddleOCR(use_pdserving=False,
-                             use_angle_cls=True,
                              det=True,
                              cls=True,
                              use_gpu=gpu,
@@ -2837,6 +2836,7 @@ def get_main_app(argv=[]):
     arg_parser.add_argument("--det_model_dir", type=str)
     arg_parser.add_argument("--rec_model_dir", type=str)
     arg_parser.add_argument("--rec_char_dict_path", type=str)
+    arg_parser.add_argument("--use_angle_cls", type=str2bool, default=True, nargs="?")
     args = arg_parser.parse_args(argv[1:])
 
     ppocr_args = {}
@@ -2846,6 +2846,8 @@ def get_main_app(argv=[]):
         ppocr_args["rec_model_dir"] = args.rec_model_dir
     if args.rec_char_dict_path:
         ppocr_args["rec_char_dict_path"] = args.rec_char_dict_path
+    if args.use_angle_cls:
+        ppocr_args["use_angle_cls"] = args.use_angle_cls
 
     win = MainWindow(lang=args.lang,
                      gpu=args.gpu,
